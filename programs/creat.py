@@ -38,7 +38,7 @@ _fsts_date_re = re.compile(r"(\d{14})BATCH")
 
 # ----------------- HELPERS -----------------
 def setup_logging():
-    logging.info("Démarrage du script creat.py (PY_SEPA_RETOUR / MAMT001).")
+    logging.info("Démarrage du script creat.py (PY_WITHDRAWAL_RETURN / MAMT001).")
 
 def remove_slashes(line: str) -> str:
     return line.replace("/", " ")
