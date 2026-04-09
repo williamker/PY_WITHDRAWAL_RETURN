@@ -8,9 +8,9 @@ from utils import setup_logger, load_config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 paths, patterns = load_config(BASE_DIR)
 
-log = setup_logger("PY_SEPA_RETOUR_MAIN", paths["log_dir"])
+log = setup_logger("PY_WITHDRAWAL_RETURN_MAIN", paths["log_dir"])
 
-# Sources = PY_SEPA_ALLER/input/tmp (ou ton chemin équivalent)
+# Sources = PY_WITHDRAWAL_OUTBOUND/input/tmp (ou ton chemin équivalent)
 chemin_sources = paths["chemin_sources"]
 output_dir = paths["output_dir"]
 programs_dir = paths["programs_dir"]
@@ -68,7 +68,7 @@ for fichier in fichiers_sources:
     before = list_outputs()
 
     try:
-        # Traitement DIRECT sur le fichier dans PY_SEPA_ALLER/input/tmp (sans copie tmp RETOUR)
+        # Traitement DIRECT sur le fichier dans PY_WITHDRAWAL_OUTBOUND/input/tmp (sans copie tmp RETOUR)
         subprocess.run([sys.executable, script, fichier], check=True)
 
         # Snapshot outputs après + détection des nouveaux fichiers
@@ -107,7 +107,7 @@ log.info("Fichiers créés :")
 for f in fichiers_crees or ["Aucun fichier créé"]:
     log.info(f" - {f}")
 
-log.info("Fichiers supprimés du dossier source (PY_SEPA_ALLER/input/tmp) :")
+log.info("Fichiers supprimés du dossier source (PY_WITHDRAWAL_OUTBOUND/input/tmp) :")
 for f in fichiers_supprimes or ["Aucun fichier supprimé"]:
     log.info(f" - {f}")
 
