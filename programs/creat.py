@@ -145,9 +145,9 @@ def normalize_extid(value: str, detail_prefix: str) -> str:
 
 def list_retour_files_mamt001() -> list[str]:
     if ENV.lower() == "prod":
-        pat = patterns.get("mamt001_retour_prod", "UNEOPROD.MAMT001_creat-mandats_*_R.csv")
+        pat = patterns.get("mamt001_retour_prod", "industryPROD.MAMT001_creat-mandats_*_R.csv")
     else:
-        pat = patterns.get("mamt001_retour_nonprod", "grpuneo.uneo-MAMT001_creat-mandats-*_R.csv")
+        pat = patterns.get("mamt001_retour_nonprod", "grpindustry.industry-MAMT001_creat-mandats-*_R.csv")
 
     return sorted(glob.glob(os.path.join(retour_dir, pat)), key=os.path.getmtime, reverse=True)
 
@@ -200,7 +200,7 @@ def process_one_aller(aller_file: str, retour_by_date: dict[str, str]) -> None:
 
     premiere_ligne = (
         ensure_len(FSTS[:37], 37) +
-        ensure_len("UNEO", 35) +
+        ensure_len("industry", 35) +
         ensure_len("INFINITE", 35) +
         ensure_len(DATE, 14) +
         batch_long +
