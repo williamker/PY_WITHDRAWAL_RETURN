@@ -73,10 +73,10 @@ def read_aller_lines(path: str) -> list[str]:
         with open(path, "r", encoding="cp1252", newline="") as f:
             return f.read().splitlines()
 
-def parse_tessi_header_first_line(retour_file: str) -> tuple[str, str]:
+def parse_partnerTsi_header_first_line(retour_file: str) -> tuple[str, str]:
     """
     1ère ligne technique :
-    TESSI-MDT;3;0;2026-02-04T20:22:11.000+02:00;...
+    partnerTsi-MDT;3;0;2026-02-04T20:22:11.000+02:00;...
     -> DATE_FMT = 20260204202211
     -> BATCH = parts[2] (souvent "0")
     """
@@ -95,11 +95,11 @@ def parse_tessi_header_first_line(retour_file: str) -> tuple[str, str]:
 
     return date_fmt, batch
 
-def build_tessi_map(retour_file: str) -> dict[str, tuple[str, str, str]]:
+def build_partnerTsi_map(retour_file: str) -> dict[str, tuple[str, str, str]]:
     """
     EXTID -> (statut_AC112, code4, rum35)
     """
-    tessi_map: dict[str, tuple[str, str, str]] = {}
+    partnerTsi_map: dict[str, tuple[str, str, str]] = {}
 
     with open_text_auto(retour_file) as f:
         reader = csv.reader(f, delimiter=";")
@@ -126,9 +126,9 @@ def build_tessi_map(retour_file: str) -> dict[str, tuple[str, str, str]]:
         code4 = reject_code_raw[:4].ljust(4) if statut == "RJCT" else (" " * 4)
         rum35 = rum[:35].ljust(35)
 
-        tessi_map[extid] = (statut, code4, rum35)
+        partnerTsi_map[extid] = (statut, code4, rum35)
 
-    return tessi_map
+    return partnerTsi_map
 
 def normalize_extid(value: str, detail_prefix: str) -> str:
     """
@@ -163,7 +163,7 @@ def build_retour_index_by_date(retour_files: list[str]) -> dict[str, str]:
     idx: dict[str, str] = {}
     for rf in retour_files:
         try:
-            date_fmt, _ = parse_tessi_header_first_line(rf)
+            date_fmt, _ = parse_partnerTsi_header_first_line(rf)
             idx[date_fmt] = rf
         except Exception as e:
             logging.warning(f"Index retour ignoré (parse KO) {os.path.basename(rf)}: {e}")
@@ -190,8 +190,8 @@ def process_one_aller(aller_file: str, retour_by_date: dict[str, str]) -> None:
     if not retour_file:
         raise ValueError(f"Aucun fichier retour MAMT003 correspondant à DATE={date14} dans {retour_dir}")
 
-    DATE, BATCH = parse_tessi_header_first_line(retour_file)
-    tessi_map = build_tessi_map(retour_file)
+    DATE, BATCH = parse_partnerTsi_header_first_line(retour_file)
+    partnerTsi_map = build_partnerTsi_map(retour_file)
 
     batch_long = extract_batch_long_from_fsts(FSTS)
     if not batch_long:
@@ -202,7 +202,7 @@ def process_one_aller(aller_file: str, retour_by_date: dict[str, str]) -> None:
         f"[MATCH] aller={os.path.basename(aller_file)} DATE_FSTS={date14} "
         f"-> retour={os.path.basename(retour_file)} (DATE_RET={DATE}, BATCH_RET={BATCH})"
     )
-    logging.info(f"Réponses TESSI chargées={len(tessi_map)} / OBS={OBS}")
+    logging.info(f"Réponses partnerTsi chargées={len(partnerTsi_map)} / OBS={OBS}")
 
     part_field = "".ljust(15)
     flow_code = "MAMT003 "
@@ -257,14 +257,14 @@ def process_one_aller(aller_file: str, retour_by_date: dict[str, str]) -> None:
 
             extid = normalize_extid(raw[9:44], DETAIL_PREFIX)
 
-            if extid not in tessi_map:
+            if extid not in partnerTsi_map:
                 nb_missing += 1
-                logging.warning(f"EXTID absent du retour TESSI: {extid} (ligne aller {line_no})")
+                logging.warning(f"EXTID absent du retour partnerTsi: {extid} (ligne aller {line_no})")
                 out.write((raw + NEWLINE).encode(OUT_ENCODING, errors="strict"))
                 nb_written += 1
                 continue
 
-            statut, code4, rum35 = tessi_map[extid]
+            statut, code4, rum35 = partnerTsi_map[extid]
 
             # Injection RUM si possible (sinon on garde raw)
             raw_with_rum = raw
